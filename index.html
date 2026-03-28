@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TV Glück-Auf Wackersdorf - Bestellung</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        tailwind.config = {
+            theme: { extend: { colors: { 'wacker-blue': '#1d4e89' } } }
+        }
+    </script>
+</head>
+<body class="bg-gray-100 min-h-screen font-sans">
+
+    <div class="max-w-xl mx-auto p-4 md:p-8">
+        <div class="text-center mb-10 mt-6">
+            <img src="wackersdorf_logo.png" alt="Logo" class="h-28 mx-auto mb-6">
+            <h1 class="text-3xl font-extrabold text-wacker-blue">Spielersitzung</h1>
+            <p class="text-xl text-gray-600 font-medium text-center">Essen & Getränke</p>
+        </div>
+
+        <div class="bg-white rounded-3xl shadow-2xl p-8 border border-gray-100">
+            <form id="orderForm" class="space-y-6">
+                    <!-- Name -->
+                <div>
+                    <label class="block text-sm font-bold text-wacker-blue mb-2">Dein Name</label>
+                    <input type="text" id="playerName" placeholder="Vor- und Nachname" required 
+                        class="w-full border-2 border-gray-200 rounded-xl p-4 text-lg focus:border-wacker-blue transition outline-none">
+                </div>
+
+                    <!-- Essen Auswahl -->
+                <div class="mb-4">
+                    <label class="block text-sm font-bold text-wacker-blue mb-2">Was möchtest du essen?</label>
+                    <select id="dishSelect" class="w-full border-2 border-gray-200 rounded-xl p-4 text-lg bg-white focus:border-wacker-blue transition outline-none">
+                        <option value="" data-price="0" data-desc="">Nichts zu essen</option>
+                    </select>
+                </div>
+
+                <!-- Beschreibung -->
+                <div id="dishDescriptionContainer" class="hidden mb-4 px-2">
+                    <p id="dishDescription" class="text-sm text-gray-500 italic border-l-4 border-blue-900 pl-3 py-1 bg-gray-50 rounded-r-lg">
+                    </p>
+                </div>
+
+                    <!-- Getränke Auswahl -->
+                <div>
+                    <label class="block text-sm font-bold text-wacker-blue mb-2">Was möchtest du trinken?</label>
+                    <select id="drinkSelect" class="w-full border-2 border-gray-200 rounded-xl p-4 text-lg bg-white focus:border-wacker-blue transition outline-none disabled:opacity-50">
+                        <option value="" data-price="0">Nichts zu trinken</option>
+                        <!-- Wird per JS gefüllt -->
+                    </select>
+                </div>
+
+                        <!-- Dynamischer Button -->
+                <button type="submit" id="submitBtn" class="w-full bg-wacker-blue text-white font-black py-5 rounded-2xl text-xl shadow-xl hover:scale-[1.02] active:scale-95 transition-all">
+                    Bitte wählen...
+                </button>
+            </form>
+
+            <!-- Bereich für die eigene Bestellung (Local Storage) -->
+        <div id="myOrderSection" class="hidden mt-8 pt-6 border-t-2 border-dashed border-gray-100">
+            <h3 class="text-sm font-black text-wacker-blue uppercase tracking-wider mb-3">Deine aktuelle Bestellung:</h3>
+            <div class="bg-gray-50 rounded-xl p-4 border border-gray-100">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p id="myOrderDetails" class="text-gray-700 font-medium"></p>
+                        <p id="myOrderPrice" class="text-wacker-blue font-bold text-sm mt-1"></p>
+                    </div>
+                    <button id="cancelOrderBtn" class="text-red-500 hover:bg-red-50 p-2 rounded-lg transition" title="Bestellung stornieren">
+                        🗑️ Stornieren
+                    </button>
+                </div>
+            </div>
+            <p class="text-[10px] text-gray-400 mt-2 italic text-center">Du kannst deine Bestellung hier löschen, falls du doch nicht kommen kannst.</p>
+        </div>
+
+            <div id="status" class="mt-6 text-center text-lg p-4 rounded-xl hidden"></div>
+        </div>
+    </div>
+
+    <!-- Hier binden wir deine JS-Datei ein -->
+    <script src="script.js"></script>
+</body>
+</html>

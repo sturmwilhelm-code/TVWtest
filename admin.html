@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - TV Wackersdorf</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        tailwind.config = {
+            theme: { extend: { colors: { 'wacker-blue': '#1d4e89' } } }
+        }
+    </script>
+    <style>
+        @media print {
+            .no-print { display: none; }
+            body { background: white; padding: 0; }
+            .shadow-xl { box-shadow: none !important; border: none !important; }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen font-sans p-4 md:p-8">
+
+    <div class="max-w-4xl mx-auto">
+        <div class="flex flex-col md:flex-row justify-between items-center mb-8 no-print gap-4 text-center md:text-left">
+            <div class="flex items-center gap-4">
+                <img src="wackersdorf_logo.png" alt="Logo" class="h-16">
+                <h1 class="text-2xl font-bold text-wacker-blue">Wirts-Ansicht</h1>
+            </div>
+            <div class="flex gap-2">
+                <button onclick="window.print()" class="bg-green-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-green-700 transition flex items-center gap-2 shadow-md">
+                    <span>🖨️</span> Liste drucken
+                </button>
+                <button id="resetBtn" class="bg-red-500 text-white px-4 py-2 rounded-lg font-bold hover:bg-red-600 transition flex items-center gap-2 shadow-md">
+                    <span>🗑️</span> Liste leeren
+                </button>
+            </div>
+        </div>
+
+        <div id="menuAdminSection" class="bg-white rounded-2xl shadow-lg p-6 mb-8 border border-gray-100 no-print hidden">
+            <h2 class="text-xl font-bold text-wacker-blue mb-6 flex items-center gap-2">
+                🍴 Speisekarte & 🥤 Getränke verwalten
+            </h2>
+            
+            <div class="space-y-4">
+                <h3 class="font-bold text-gray-700 uppercase text-sm tracking-wider border-b pb-2">Speisen</h3>
+                <form id="menuForm" class="space-y-3">
+                    <input type="text" id="newDishName" placeholder="Name des Gerichts" required 
+                        class="w-full border-2 border-gray-100 rounded-xl p-3 outline-none focus:border-wacker-blue transition">
+                    
+                    <input type="text" id="newDishDesc" placeholder="Beschreibung (z.B. mit Beilagensalat)" 
+                        class="w-full border-2 border-gray-100 rounded-xl p-3 outline-none focus:border-wacker-blue transition">
+                        
+                    <input type="text" id="newDishPrice" placeholder="Preis (z.B. 8,50 €)" 
+                        class="w-full border-2 border-gray-100 rounded-xl p-3 outline-none focus:border-wacker-blue transition">
+                    
+                    <button type="submit" class="w-full bg-wacker-blue text-white font-bold py-3 rounded-xl hover:opacity-90 transition shadow-md">
+                        Hinzufügen
+                    </button>
+                </form>
+                <p class="text-[10px] text-gray-400 font-bold uppercase">Klicken zum Bearbeiten:</p>
+                <div id="currentMenu" class="flex flex-wrap gap-2"></div>
+            </div>
+
+                <div class="space-y-4">
+                    <h3 class="font-bold text-gray-700 uppercase text-sm tracking-wider border-b pb-2">Getränke</h3>
+                    <form id="drinkForm" class="space-y-3">
+                        <input type="text" id="newDrinkName" placeholder="Name des Getränks" required 
+                            class="w-full border-2 border-gray-100 rounded-xl p-3 outline-none focus:border-blue-500 transition">
+                        <input type="text" id="newDrinkPrice" placeholder="Preis (z.B. 3,00 €)" 
+                            class="w-full border-2 border-gray-100 rounded-xl p-3 outline-none focus:border-blue-500 transition">
+                        <button type="submit" class="w-full bg-blue-500 text-white font-bold py-3 rounded-xl hover:opacity-90 transition shadow-md">
+                            Hinzufügen
+                        </button>
+                    </form>
+                    <p class="text-[10px] text-gray-400 font-bold uppercase">Klicken zum Bearbeiten:</p>
+                    <div id="currentDrinks" class="flex flex-wrap gap-2"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-200">
+    <div class="p-4 bg-wacker-blue text-white font-bold text-center no-print">
+        Aktuelle Bestellungen
+    </div>
+    <table class="w-full text-left border-collapse">
+        <thead class="bg-gray-100 text-wacker-blue text-xs uppercase font-black">
+            <tr>
+                <th class="p-4 border-b">Spielername</th>
+                <th class="p-4 border-b">Essen</th>
+                <th class="p-4 border-b">Getränk</th>
+                <!-- NEU: Preis Spalte -->
+                <th class="p-4 border-b">Preis</th>
+                <th class="p-4 border-b no-print text-center">Aktion</th>
+            </tr>
+        </thead>
+        <tbody id="orderTableBody" class="divide-y divide-gray-200">
+            <!-- Bestellungen -->
+        </tbody>
+        <!-- NEU: Fußzeile für Gesamtpreis -->
+        <tfoot class="bg-gray-50 font-bold text-wacker-blue">
+            <tr>
+                <td colspan="3" class="p-4 text-right">Gesamtsumme:</td>
+                <td id="totalSumDisplay" class="p-4 text-lg">0,00 €</td>
+                <td class="no-print"></td>
+            </tr>
+        </tfoot>
+    </table>
+</div>
+        
+        <div id="loading" class="text-center mt-10 text-gray-400 font-medium">Daten werden geladen...</div>
+    </div>
+
+    <script src="admin.js"></script>
+</body>
+</html>
