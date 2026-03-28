@@ -119,14 +119,20 @@ orderForm.addEventListener('submit', async (e) => {
     const name = document.getElementById('playerName').value;
     const dish = dishSelect.value;
     const drink = drinkSelect.value;
+    const sonderwunsch = document.getElementById('specialRequest').value;
 
     submitBtn.disabled = true;
     submitBtn.textContent = "Wird gesendet...";
 
     try {
         const { data, error } = await _supabase.from('bestellungen').insert([
-            { spieler_name: name, gericht_name: dish, getraenk: drink }
-        ]).select(); // .select() ist wichtig, um die neue ID zurückzubekommen!
+            { 
+                spieler_name: name, 
+                gericht_name: dish, 
+                getraenk: drink, 
+                sonderwunsch: sonderwunsch 
+            }
+        ]).select();
 
         if (error) throw error;
 
@@ -134,7 +140,7 @@ orderForm.addEventListener('submit', async (e) => {
         localStorage.setItem('wacker_order_id', data[0].id);
         
         alert("Mahlzeit! Deine Bestellung wurde gespeichert.");
-        checkExistingOrder(); // Anzeige aktualisieren
+        checkExistingOrder();
     } catch (err) {
         alert("Fehler beim Senden.");
         submitBtn.disabled = false;

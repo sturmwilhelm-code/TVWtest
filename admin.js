@@ -172,10 +172,13 @@ async function loadOrders() {
             totalSum += rowSum;
 
             const tr = document.createElement('tr');
-            tr.className = "hover:bg-gray-50 transition";
+            tr.className = "hover:bg-gray-50 transition border-b";
             tr.innerHTML = `
                 <td class="p-4 font-bold text-gray-800">${order.spieler_name}</td>
-                <td class="p-4 text-gray-700 font-medium">${order.gericht_name || '—'}</td>
+                <td class="p-4">
+                    <div class="font-medium text-gray-700">${order.gericht_name || '—'}</div>
+                    ${order.sonderwunsch ? `<div class="text-xs text-orange-600 font-bold italic">★ ${order.sonderwunsch}</div>` : ''}
+                </td>
                 <td class="p-4 text-gray-500 italic text-sm">${order.getraenk || '—'}</td>
                 <td class="p-4 font-bold text-wacker-blue">${rowSum.toFixed(2).replace('.', ',')} €</td>
                 <td class="p-4 text-center no-print">
@@ -215,7 +218,12 @@ resetBtn.addEventListener('click', async () => {
         const { data: orders } = await _supabase.from('bestellungen').select('*');
         if (!orders || orders.length === 0) return alert("Liste ist bereits leer.");
 
-        let listenText = orders.map(o => `- ${o.spieler_name}: ${o.gericht_name} & ${o.getraenk}`).join('\n');
+        let listenText = orders.map(o => {
+            let text = `- ${o.spieler_name}: ${o.gericht_name}`;
+            if(o.sonderwunsch) text += ` (${o.sonderwunsch})`; // Wunsch hinzufügen
+            text += ` & ${o.getraenk}`;
+            return text;
+        }).join('\n');
         let gesamtSumme = document.getElementById('totalSumDisplay').textContent;
 
         // 2. E-Mail senden
