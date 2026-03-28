@@ -219,7 +219,7 @@ resetBtn.addEventListener('click', async () => {
         let gesamtSumme = document.getElementById('totalSumDisplay').textContent;
 
         // 2. E-Mail senden
-        await emailjs.send("service_87rsw8n", "template_rhxso3h", {
+        await emailjs.send("service_87rsw8n", "template_2y9rrdn", {
             datum: new Date().toLocaleDateString('de-DE'),
             liste: listenText,
             summe: gesamtSumme
