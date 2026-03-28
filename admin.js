@@ -19,8 +19,6 @@ let editMode = false;
 let editId = null;
 let editTable = '';
 
-// --- FUNKTIONEN GLOBAL VERFÜGBAR MACHEN ---
-
 // --- BEARBEITUNGS-MODUS (Eintragen, Löschen, Bearbeiten) ---
 window.prepareEdit = function(id, name, preis, table, beschreibung = "") {
     editMode = true;
@@ -36,7 +34,6 @@ window.prepareEdit = function(id, name, preis, table, beschreibung = "") {
         btn.className = "w-full bg-orange-500 text-white font-bold py-3 rounded-xl hover:opacity-90 transition shadow-md";
         menuForm.scrollIntoView({ behavior: 'smooth' });
     } else {
-        // Getränke haben in deiner Datenbank keine Beschreibung, daher bleibt das hier wie gehabt
         document.getElementById('newDrinkName').value = name;
         document.getElementById('newDrinkPrice').value = preis;
         const btn = drinkForm.querySelector('button[type="submit"]');
@@ -121,7 +118,7 @@ menuForm.addEventListener('submit', async (e) => {
     } catch (err) { alert("Fehler beim Speichern!"); }
 });
 
-// Speichern Getränke
+// --- SPEICHERN GETRÄNKE ---
 drinkForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     const name = document.getElementById('newDrinkName').value;
@@ -144,11 +141,11 @@ function resetForm(form, btn, oldColor, oldText) {
     editMode = false; editId = null; editTable = '';
 }
 
-// Restliche Funktionen (loadOrders, checkAccess, resetBtn) bleiben wie vorher...
+// --- BESTELLUNGEN LADEN (Mit Preis-Berechnung) ---
 async function loadOrders() {
     loadingDiv.classList.remove('hidden');
     try {
-        // 1. Alles laden: Bestellungen, Speisen und Getränke (für Preis-Abgleich)
+        // 1. Alles laden: Datenbank abrufen
         const { data: orders } = await _supabase.from('bestellungen').select('*').order('erstellt_am', { ascending: false });
         const { data: menu } = await _supabase.from('speisekarte').select('name, preis');
         const { data: drinks } = await _supabase.from('getraenke').select('name, preis');
@@ -163,11 +160,11 @@ async function loadOrders() {
         let totalSum = 0;
 
         orders.forEach(order => {
-            // Preis für das Essen finden
+            // Preis für das Essen 
             const dishData = menu.find(m => m.name === order.gericht_name);
             const dishPrice = parsePrice(dishData?.preis);
 
-            // Preis für das Getränk finden
+            // Preis für das Getränk 
             const drinkData = drinks.find(d => d.name === order.getraenk);
             const drinkPrice = parsePrice(drinkData?.preis);
 
@@ -198,6 +195,7 @@ async function loadOrders() {
     }
 }
 
+// --- ZUGRIFFSKONTROLLE --
 function checkAccess() {
     const input = prompt("Bitte gib das Wirts-Passwort ein:");
     if (input === GEHEIMWORT) {
@@ -210,9 +208,30 @@ function checkAccess() {
 }
 
 resetBtn.addEventListener('click', async () => {
-    if (confirm("Wirklich alles löschen?")) {
+    if (!confirm("Wirklich alles löschen? Ein Backup wird automatisch an den Beisitzer und dem Wirt gesendet.")) return;
+
+    try {
+        // 1. Daten für die Mail vorbereiten
+        const { data: orders } = await _supabase.from('bestellungen').select('*');
+        if (!orders || orders.length === 0) return alert("Liste ist bereits leer.");
+
+        let listenText = orders.map(o => `- ${o.spieler_name}: ${o.gericht_name} & ${o.getraenk}`).join('\n');
+        let gesamtSumme = document.getElementById('totalSumDisplay').textContent;
+
+        // 2. E-Mail senden
+        await emailjs.send("service_87rsw8n", "template_rhxso3h", {
+            datum: new Date().toLocaleDateString('de-DE'),
+            liste: listenText,
+            summe: gesamtSumme
+        });
+
+        // 3. Erst nach Mail-Versand in Datenbank löschen
         await _supabase.from('bestellungen').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+        
+        alert("Backup gesendet und Liste erfolgreich geleert!");
         loadOrders();
+    } catch (err) {
+        alert("Fehler beim Backup/Löschen: " + err.message);
     }
 });
 
