@@ -65,7 +65,6 @@ async function loadData() {
     try {
         const { data: dishes } = await _supabase.from('speisekarte').select('*').order('name');
         
-        // WICHTIG: Sicherstellen, dass das Element existiert, bevor wir innerHTML setzen
         if (dishSelect) {
             dishSelect.innerHTML = '<option value="" data-price="0" data-desc="">Nichts zu essen</option>';
             
@@ -101,7 +100,7 @@ async function loadData() {
 function updateButton() {
     const selectedDish = dishSelect.options[dishSelect.selectedIndex];
     
-    // --- Logik für die Beschreibung (deine Skizze) ---
+    // --- Logik für die Beschreibung ---
     const desc = selectedDish?.dataset.desc || "";
     if (desc && desc.trim() !== "") {
         dishDescDisplay.textContent = desc;
@@ -125,7 +124,6 @@ function updateButton() {
     
     if (total > 0) {
         submitBtn.textContent = `Für ${total.toFixed(2).replace('.', ',')} € bestellen`;
-        // Wir nutzen hier direkt Farben, falls classList.replace mal zickt
         submitBtn.style.backgroundColor = "#16a34a"; // Green-600
         submitBtn.disabled = false;
     } else {
