@@ -12,6 +12,32 @@ const myOrderSection = document.getElementById('myOrderSection');
 const myOrderDetails = document.getElementById('myOrderDetails');
 const myOrderPrice = document.getElementById('myOrderPrice');
 const cancelOrderBtn = document.getElementById('cancelOrderBtn');
+const dateDisplay = document.getElementById('sitzungDatumDisplay');
+
+// Funktion zum Laden des Datums
+async function loadSitzungDatum() {
+    if (!dateDisplay) return;
+
+    try {
+        const { data, error } = await _supabase
+            .from('config')
+            .select('value')
+            .eq('key', 'sitzung_datum')
+            .single();
+
+        if (error) throw error;
+        if (data) {
+            dateDisplay.textContent = data.value;
+            dateDisplay.classList.remove('opacity-0');
+            dateDisplay.classList.add('transition-opacity', 'duration-500', 'opacity-100');
+        }
+    } catch (err) {
+        console.error("Fehler beim Laden des Datums:", err);
+        dateDisplay.textContent = "Fehler";
+        dateDisplay.classList.remove('opacity-0');
+        dateDisplay.classList.add('transition-opacity', 'duration-500', 'opacity-100');
+    }
+}
 
 // Prüfen, ob der Spieler schon etwas bestellt hat
 async function checkExistingOrder() {
@@ -169,3 +195,4 @@ cancelOrderBtn.addEventListener('click', async () => {
 
 loadData();
 checkExistingOrder();
+loadSitzungDatum();

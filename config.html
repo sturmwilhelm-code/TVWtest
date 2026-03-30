@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Konfiguration</title>
+    <link rel="icon" type="image/png" href="wackersdorf_logo.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        tailwind.config = {
+            theme: { extend: { colors: { 'wacker-blue': '#1d4e89' } } }
+        }
+    </script>
+</head>
+<body class="bg-gray-100 min-h-screen font-sans uppercase tracking-tight">
+
+    <div class="max-w-xl mx-auto p-4 md:p-8">
+        <!-- Header -->
+        <div class="flex items-center justify-between mb-8 mt-6">
+            <a href="admin.html" class="text-wacker-blue font-bold text-xs hover:underline">← Zur Liste</a>
+            <img src="wackersdorf_logo.png" alt="Logo" class="h-12">
+            <span class="text-[10px] text-gray-400">Settings</span>
+        </div>
+
+        <!-- Hauptbox -->
+        <div class="bg-white rounded-3xl shadow-xl p-8 border border-gray-100">
+            <h1 class="text-xl font-black text-wacker-blue mb-6">Sitzung verwalten</h1>
+
+            <div class="space-y-4">
+                <label class="block text-xs font-black text-gray-400 uppercase">
+                    Datum der nächsten Spielersitzung:
+                </label>
+                
+                <div class="space-y-3">
+                    <input type="text" id="dateInput" placeholder="z.B. Freitag, 01. Mai 2026" 
+                        class="w-full border-2 border-gray-100 rounded-xl p-4 outline-none focus:border-wacker-blue transition bg-gray-50 text-lg">
+                    
+                    <button id="saveDateBtn" class="w-full bg-wacker-blue text-white font-black py-4 rounded-xl shadow-lg hover:scale-[1.01] active:scale-95 transition-all uppercase tracking-widest">
+                        Datum Speichern
+                    </button>
+                </div>
+                <!-- Statusmeldung -->
+                <p id="statusMessage" class="text-center text-xs font-bold pt-2 hidden"></p>
+            </div>
+        </div>
+
+        <!-- Made with Love Footer -->
+        <footer class="mt-12 text-center">
+            <div class="text-[10px] font-medium text-gray-400 opacity-50">
+                Made with 💙 for TV Wackersdorf
+            </div>
+        </footer>
+    </div>
+
+    <!-- Deine JS-Datei (umbenannt auf config.js) -->
+    <script src="config.js"></script>
+
+</body>
+</html>

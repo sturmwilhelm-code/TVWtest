@@ -21,6 +21,22 @@
             <img src="wackersdorf_logo.png" alt="Logo" class="h-28 mx-auto mb-6">
             <h1 class="text-3xl font-extrabold text-wacker-blue">Spielersitzung</h1>
             <p class="text-xl text-gray-600 font-medium text-center">Essen & Getränke</p>
+                    <div class="flex justify-center mt-6 mb-2">
+    <div class="bg-wacker-blue border-2 border-blue-950 rounded-2xl px-8 py-4 shadow-xl transform hover:scale-[1.03] transition-transform duration-300">
+        
+        <p class="text-[11px] uppercase font-black text-white opacity-70 leading-none mb-1.5 tracking-widest text-center">
+            Nächster Termin
+        </p>
+        
+        <p id="sitzungDatumDisplay" class="text-xl font-extrabold text-white leading-none tracking-tight text-center">
+            Lade Datum...
+        </p>
+        
+        <p class="text-[13px] text-white opacity-80 mt-2.5 pt-2 border-t border-blue-900 border-opacity-50 text-center font-medium italic">
+            Bestellung bitte bis <span id="sitzungDeadlineDisplay" class="font-bold not-italic">XX:XX</span> Uhr abgeben
+
+    </div>
+</div>
         </div>
 
         <div class="bg-white rounded-3xl shadow-2xl p-8 border border-gray-100">
@@ -92,4 +108,19 @@
     <!-- Hier binden wir deine JS-Datei ein -->
     <script src="script.js"></script>
 </body>
+
+<footer class="mt-12 mb-8 text-center">
+    <!-- Der "Made with" Schriftzug -->
+    <div class="text-xs font-medium text-gray-500 opacity-50 hover:opacity-100 transition-opacity duration-300">
+        Made with <span class="text-blue-600">💙</span> for TV Wackersdorf
+    </div>
+    
+    <!-- Die rechtlichen Links etwas kleiner darunter -->
+    <div class="mt-2">
+        <a href="rechtliches.html" class="text-[10px] text-gray-400 hover:text-wacker-blue underline tracking-wide uppercase">
+            Impressum & Datenschutz
+        </a>
+    </div>
+</footer>
+
 </html>
