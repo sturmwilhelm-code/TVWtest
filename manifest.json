@@ -1,0 +1,15 @@
+{
+  "name": "TV Wackersdorf - Bestellsystem",
+  "short_name": "TVW Bestellung",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#f3f4f6",
+  "theme_color": "#1d4e89",
+  "icons": [
+    {
+      "src": "wackersdorf_logo.png",
+      "sizes": "192x192 512x512",
+      "type": "image/png"
+    }
+  ]
+}
