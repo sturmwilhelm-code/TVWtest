@@ -140,7 +140,8 @@ function updateDishDescription(selectedName, elementId) {
             if (targetSelect) {
                 descEl = document.createElement('p');
                 descEl.id = elementId;
-                descEl.className = 'text-xs text-indigo-300 mt-2 bg-indigo-950/40 border border-indigo-500/30 p-2.5 rounded-lg italic';
+                // Angepasstes Styling für optimale Lesbarkeit auf hellem Hintergrund
+                descEl.className = 'text-sm text-slate-800 mt-2 bg-slate-100 border border-slate-300 p-3 rounded-xl italic font-medium shadow-sm';
                 targetSelect.parentNode.insertBefore(descEl, targetSelect.nextSibling);
             }
         }
