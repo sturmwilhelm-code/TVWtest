@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - TV Wackersdorf Weihnachtsfeier</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        tailwind.config = {
+            theme: { extend: { colors: { 'wacker-blue': '#1d4e89' } } }
+        }
+    </script>
+    <style>
+@media print {
+    /* Hintergründe auf weiß für den Druck umstellen */
+    body {
+        background: #ffffff !important;
+        color: #000000 !important;
+    }
+    
+    /* Alle Elemente mit Klasse no-print, Buttons, Formulare & Overlay im Druck verstecken */
+    .no-print, 
+    .print\:hidden, 
+    button, 
+    #pinOverlay, 
+    #menuManagementSection, 
+    #deadlineSection,
+    #status {
+        display: none !important;
+    }
+
+    /* Schatten und Rahmen entfernen */
+    .shadow-lg, .border, .bg-slate-800 {
+        box-shadow: none !important;
+        border: none !important;
+        background: transparent !important;
+    }
+
+    /* Tabelle sauber formatieren */
+    table {
+        width: 100% !important;
+        border-collapse: collapse !important;
+        color: #000000 !important;
+    }
+    
+    th, td {
+        border: 1px solid #cbd5e1 !important;
+        padding: 8px !important;
+        color: #000000 !important;
+    }
+    
+    th {
+        background-color: #f1f5f9 !important;
+        font-weight: bold !important;
+    }
+
+    /* Gesamtsumme für Ausdruck lesbar machen */
+    #totalAmount div {
+        background-color: #f8fafc !important;
+        border: 1px solid #cbd5e1 !important;
+        color: #000000 !important;
+        margin-top: 1rem !important;
+    }
+
+    #totalAmount span {
+        color: #000000 !important;
+    }
+}
+</style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen p-4 md:p-8 font-sans">
+
+    <!-- PIN Overlay -->
+    <div id="pinOverlay" class="fixed inset-0 bg-slate-950/95 backdrop-blur-md flex items-center justify-center z-50">
+        <div class="bg-slate-800 p-8 rounded-3xl border border-slate-700 max-w-sm w-full text-center shadow-2xl space-y-4">
+            <h2 class="text-xl font-bold text-white">Admin-Zugang</h2>
+            <p class="text-xs text-slate-400">Bitte gib die Admin-PIN ein:</p>
+            
+            <form onsubmit="event.preventDefault(); window.checkPin();">
+                <input type="password" id="pinInput" maxlength="6" placeholder="PIN eingeben" autofocus
+                    class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-center text-2xl font-mono tracking-widest text-amber-400 outline-none focus:border-amber-400 mb-4">
+                
+                <button type="button" onclick="window.checkPin()" id="pinSubmitBtn" class="w-full bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold py-3 rounded-xl transition">
+                    Entsperren
+                </button>
+            </form>
+            
+            <p id="pinError" class="text-xs text-red-400 hidden">Falsche PIN!</p>
+        </div>
+    </div>
+
+    <!-- Hauptinhalt -->
+    <div id="adminContent" class="hidden max-w-4xl mx-auto space-y-8">
+        
+        <div class="flex flex-wrap justify-between items-center bg-slate-800 p-6 rounded-2xl border border-slate-700 shadow-lg gap-4 no-print">
+            <div>
+                <h1 class="text-2xl font-black text-white">Weihnachtsfeier Admin</h1>
+                <p class="text-sm text-slate-400">Speisekarte & Anmeldungen verwalten</p>
+            </div>
+            <div class="flex gap-2">
+                <button onclick="window.print()" class="text-xs bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 px-4 py-2 rounded-lg transition font-bold">
+                    🖨️ Druckansicht
+                </button>
+                <a href="index.html" class="text-xs bg-slate-700 hover:bg-slate-600 px-4 py-2 rounded-lg transition text-slate-200">
+                    Zurück zur Hauptseite
+                </a>
+            </div>
+        </div>
+
+        <div class="hidden print-only mb-6">
+            <h1 class="text-2xl font-bold">TV Wackersdorf - Anmeldungen & Essensbestellungen Weihnachtsfeier</h1>
+            <p class="text-sm text-gray-600" id="printDate"></p>
+        </div>
+
+        <!-- Deadline verwalten -->
+        <div id="deadlineSection" class="bg-slate-800 p-6 rounded-2xl border border-slate-700 shadow-lg space-y-4 no-print">
+            <h2 class="text-xl font-bold text-amber-400 flex items-center gap-2">
+                ⏰ Anmeldeschluss / Deadline
+            </h2>
+            <div class="flex flex-col md:flex-row gap-3 items-center">
+                <input type="datetime-local" id="deadlineInput" 
+                    class="bg-slate-900 border border-slate-700 rounded-xl p-3 text-white focus:border-amber-400 outline-none w-full md:w-auto">
+                <button id="saveDeadlineBtn" class="bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold rounded-xl p-3 transition w-full md:w-auto">
+                    Deadline speichern
+                </button>
+            </div>
+            <p id="deadlineStatus" class="text-xs text-slate-400 hidden"></p>
+        </div>
+
+        <div id="menuManagementSection" class="bg-slate-800 p-6 rounded-2xl border border-slate-700 shadow-lg space-y-6 no-print">
+            <h2 class="text-xl font-bold text-amber-400 flex items-center gap-2">
+                🍔 Speisekarte verwalten
+            </h2>
+
+            <form id="addDishForm" class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <input type="text" id="newDishName" placeholder="Gericht Name" required
+                    class="bg-slate-900 border border-slate-700 rounded-xl p-3 text-white focus:border-amber-400 outline-none">
+                <input type="number" step="0.01" id="newDishPrice" placeholder="Preis in € (optional)"
+                    class="bg-slate-900 border border-slate-700 rounded-xl p-3 text-white focus:border-amber-400 outline-none">
+                <input type="text" id="newDishDesc" placeholder="Beschreibung / Zutaten (optional)"
+                    class="bg-slate-900 border border-slate-700 rounded-xl p-3 text-white focus:border-amber-400 outline-none md:col-span-2">
+                <button type="submit" class="bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold rounded-xl p-3 transition">
+                    + Gericht hinzufügen
+                </button>
+            </form>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-sm text-slate-300">
+                    <thead class="bg-slate-900/60 text-slate-400 uppercase text-xs">
+                        <tr>
+                            <th class="p-3 rounded-l-lg">Gericht & Beschreibung</th>
+                            <th class="p-3">Preis</th>
+                            <th class="p-3 text-right rounded-r-lg">Aktion</th>
+                        </tr>
+                    </thead>
+                    <tbody id="dishesTableBody" class="divide-y divide-slate-700/50"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700 shadow-lg space-y-6">
+            <div class="flex justify-between items-center no-print">
+                <h2 class="text-xl font-bold text-blue-400 flex items-center gap-2">
+                    📋 Anmeldungen (<span id="totalOrdersCount">0</span>)
+                </h2>
+                <button id="refreshOrdersBtn" class="text-xs bg-slate-700 hover:bg-slate-600 px-3 py-1.5 rounded-lg transition">
+                    🔄 Aktualisieren
+                </button>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-sm text-slate-300">
+                    <thead class="bg-slate-900/60 text-slate-400 uppercase text-xs">
+                        <tr>
+                            <th class="p-3 rounded-l-lg">#</th>
+                            <th class="p-3">Name</th>
+                            <th class="p-3">Bestellte Speise(n)</th>
+                            <th class="p-3">Anmerkungen</th>
+                            <th class="p-3 text-right">Preis</th>
+                            <th class="p-3 text-right rounded-r-lg no-print">Aktion</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ordersTableBody" class="divide-y divide-slate-700/50"></tbody>
+                </table>
+                <div id="totalAmount"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="w-admin.js"></script>
+</body>
+</html>

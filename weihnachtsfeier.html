@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TV Wackersdorf - Weihnachtsfeier</title>
+    <link rel="icon" type="image/png" href="wackersdorf_logo.png">
+    <link rel="apple-touch-icon" href="wackersdorf_logo.png">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#1d4e89">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        tailwind.config = {
+            theme: { extend: { colors: { 'wacker-blue': '#1d4e89' } } }
+        }
+    </script>
+</head>
+<body class="bg-[linear-gradient(rgba(15,23,42,0.82),rgba(15,23,42,0.90)),url('bg.png')] bg-cover bg-center bg-no-repeat bg-fixed min-h-screen font-sans text-slate-100">
+
+    <div class="max-w-xl mx-auto p-4 md:p-8">
+        <!-- Header / Banner -->
+        <div class="text-center mb-8 mt-4">
+            <img src="wackersdorf_logo.png" alt="Logo" class="h-24 mx-auto mb-4 drop-shadow-lg">
+            <h1 class="text-3xl font-extrabold text-white drop-shadow">Weihnachtsfeier</h1>
+            <p class="text-lg text-gray-200 font-medium text-center">Anmeldung & Essensbestellung</p>
+            
+            <div class="flex justify-center mt-6 mb-2">
+                <div class="bg-wacker-blue/90 backdrop-blur-md border-2 border-blue-950 rounded-2xl px-6 py-4 shadow-2xl">
+                    <p class="text-[11px] uppercase font-black text-amber-300 opacity-90 leading-none mb-1.5 tracking-widest text-center">
+                        Termin & Treffpunkt
+                    </p>
+                    <p id="wfDatumDisplay" class="text-lg font-extrabold text-white leading-none tracking-tight text-center">
+                        20.11.2026 ab 18:00 Uhr
+                    </p>
+                    <p class="text-[13px] text-gray-200 opacity-90 mt-2 pt-2 border-t border-blue-900/60 text-center font-medium">
+                        Schwimmbad-Café • Essen ca. 19:00 Uhr
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Hauptformular -->
+        <div class="bg-white/95 backdrop-blur-md rounded-3xl shadow-2xl p-6 md:p-8 border border-white/20 text-slate-900">
+            <form id="wfOrderForm" class="space-y-6">
+                <!-- Name -->
+                <div>
+                    <label class="block text-sm font-bold text-wacker-blue mb-2">Dein Name</label>
+                    <input type="text" id="playerName" placeholder="Vor- und Nachname" required 
+                        class="w-full border-2 border-gray-200 rounded-xl p-4 text-lg focus:border-wacker-blue transition outline-none">
+                </div>
+
+                <!-- Begleitung Auswahl -->
+                <div>
+                    <label class="block text-sm font-bold text-wacker-blue mb-2">Kommst du mit Begleitung?</label>
+                    <div class="grid grid-cols-2 gap-3">
+                        <label class="flex items-center justify-center gap-2 border-2 border-gray-200 rounded-xl p-3 cursor-pointer hover:border-wacker-blue transition has-[:checked]:border-wacker-blue has-[:checked]:bg-blue-50/50">
+                            <input type="radio" name="hasGuest" value="no" checked class="w-4 h-4 text-wacker-blue" onchange="toggleGuestOption(false)">
+                            <span class="font-bold text-sm text-gray-700">Nein, alleine</span>
+                        </label>
+                        <label class="flex items-center justify-center gap-2 border-2 border-gray-200 rounded-xl p-3 cursor-pointer hover:border-wacker-blue transition has-[:checked]:border-wacker-blue has-[:checked]:bg-blue-50/50">
+                            <input type="radio" name="hasGuest" value="yes" class="w-4 h-4 text-wacker-blue" onchange="toggleGuestOption(true)">
+                            <span class="font-bold text-sm text-gray-700">Ja (+1 Begleitung)</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Gericht Spieler -->
+                <div>
+                    <label class="block text-sm font-bold text-wacker-blue mb-2">Dein Gericht *</label>
+                    <select id="dishSelect" required class="w-full border-2 border-gray-200 rounded-xl p-4 text-lg bg-white focus:border-wacker-blue transition outline-none">
+                        <option value="">Lade Speisekarte...</option>
+                    </select>
+                </div>
+
+                <!-- Gericht Begleitung (Standardmäßig versteckt) -->
+                <div id="guestDishContainer" class="hidden space-y-2 pt-2 border-t-2 border-dashed border-amber-200">
+                    <label class="block text-sm font-bold text-amber-700">Gericht für deine Begleitung *</label>
+                    <select id="guestDishSelect" class="w-full border-2 border-amber-200 rounded-xl p-4 text-lg bg-white focus:border-wacker-blue transition outline-none">
+                        <option value="">Lade Speisekarte...</option>
+                    </select>
+                </div>
+
+                <!-- Sonderwünsche -->
+                <div class="space-y-2">
+                    <label class="block text-sm font-bold text-wacker-blue">Sonderwünsche (optional):</label>
+                    <input type="text" id="specialRequest" placeholder="z.B. Allergenhinweise, ohne Zwiebeln..." 
+                        class="w-full border-2 border-gray-100 rounded-xl p-4 outline-none focus:border-wacker-blue transition bg-gray-50">
+                </div>
+
+                <!-- Submit Button -->
+                <button type="submit" id="submitBtn" class="w-full bg-wacker-blue text-white font-black py-5 rounded-2xl text-xl shadow-xl hover:scale-[1.02] active:scale-95 transition-all">
+                    Anmeldung abschicken
+                </button>
+            </form>
+
+            <!-- Eigene Bestellung anzeigen (LocalStorage) -->
+            <div id="myOrderSection" class="hidden mt-8 pt-6 border-t-2 border-dashed border-gray-200">
+                <h3 class="text-sm font-black text-wacker-blue uppercase tracking-wider mb-3">Deine aktuelle Anmeldung:</h3>
+                <div class="bg-gray-50 rounded-xl p-4 border border-gray-100">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p id="myOrderDetails" class="text-gray-700 font-medium"></p>
+                            <p id="myGuestDetails" class="text-amber-700 font-medium text-sm mt-1"></p>
+                        </div>
+                        <button id="cancelOrderBtn" class="text-red-500 hover:bg-red-50 p-2 rounded-lg transition" title="Anmeldung stornieren">
+                            🗑️ Stornieren
+                        </button>
+                    </div>
+                </div>
+                <p class="text-[10px] text-gray-400 mt-2 italic text-center">Du kannst deine Anmeldung hier löschen, falls etwas dazwischenkommt.</p>
+            </div>
+
+            <div id="status" class="mt-6 text-center text-lg p-4 rounded-xl hidden"></div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="mt-12 mb-8 text-center">
+            <div class="text-xs font-medium text-gray-300 opacity-70 hover:opacity-100 transition-opacity duration-300">
+                Made with <span class="text-blue-400">💙</span> for TV Wackersdorf
+            </div>
+            <div class="mt-2">
+                <a href="rechtliches.html" class="text-[10px] text-gray-300 hover:text-white underline tracking-wide uppercase">
+                    Impressum & Datenschutz
+                </a>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        function toggleGuestOption(hasGuest) {
+            const container = document.getElementById('guestDishContainer');
+            const guestSelect = document.getElementById('guestDishSelect');
+            if (hasGuest) {
+                container.classList.remove('hidden');
+                guestSelect.required = true;
+            } else {
+                container.classList.add('hidden');
+                guestSelect.required = false;
+                guestSelect.value = '';
+            }
+        }
+    </script>
+    <script src="weihnachtsfeier.js"></script>
+</body>
+</html>
